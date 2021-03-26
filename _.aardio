@@ -1,0 +1,180 @@
+﻿//promise 状态管理
+//https://promisesaplus.com/#notes promise 实现标准
+class promise{
+	ctor(executor/*输入构造函数所需要的参数*/){
+		isFuntion(executor,"构造函数")
+		this.executor = executor //function(resolve,reject){}
+		this.state = _pending //pending fulfilled rejected三个状态
+		this.value = null //返回的成功值
+		this.reason = null //返回的错误值 
+		this.onFulfilledCallbacks = {} //异步回调then fufilled函数调用堆
+		this.onRejectedCallbacks = {} //异步回调then rejected函数调用堆
+	};
+	
+	clutch = function(fun){
+		isFuntion(fun,"clutch")
+		if(this.state == _rejected){
+			fun()
+		}
+	};
+	finally = function(fun){
+		isFuntion(fun,"finally")
+		fun()
+	};
+	resolve = function(value){
+		if(this.state == _pending){
+			logger.trace("resolve",value)
+			this.state =_fulfilled
+			this.value = value
+			for(index,fulfilledCallback in this.onFulfilledCallbacks){
+				fulfilledCallback()
+			}	
+		}
+	};
+	reject = function(reason){
+		if(this.state ==_pending){
+			this.state = _rejected
+			this.reason = reason
+			logger.trace("reject",reason)
+			for(index,rejectCallback in this.onRejectedCallbacks){
+				rejectCallback()
+			}
+		}
+	};
+	//递归调用返回的promise
+	resolvePromise = function(promise2,x,resolve,reject){
+		logger.trace("resolvePromise",promise2,x,resolve,reject)
+		if clled = false //重复call
+		if(promise2==x and x !=null){
+			return reject("循环引用"); 
+		}
+		//判断x 是一个table 
+		if(type.table == type(x)){
+			try{
+				var then = x.then 
+				function resolve2(y){
+					if(clled){
+						logger.trace("resolve2 clled is true");
+						return;
+					} ; 
+					//递归调用
+					this.resolvePromise(promise2,y,resolve,reject)
+				}
+				function reject2(reason){
+					if(clled){
+						logger.trace("resolve2 clled is true");
+						return;
+					} ; 
+					called = true;
+					reject(reason)
+				}
+		
+				if(type.function == type(then)){
+					//如果then是函数则调用它
+					call(then(resolve2,reject2),x)
+				}else{
+					if (called) return ;
+        			called = true;
+        			resolve(x);
+				}
+			}
+			catch(e){
+				if (called) return ;
+     			called = true;
+				reject(e)
+			}
+			
+		}else{
+			//x 是一个普通值
+			resolve(x)
+		}
+	};
+	
+	then = function(onFulfilled,onRejected){
+		//判断参数
+		if(onFulfilled != null ){
+			isFuntion(onFulfilled,"then() @1")
+		}
+		if(onRejected != null ){
+			isFuntion(onRejected,"then() @2")
+		}
+		
+		logger.trace("promise then",this.state)
+		
+		//返回一个promise
+		promise2 = ..promise(function(resolve,reject){
+			logger.trace("return promese",this.state)
+			function onFulfilledItem(){
+				try{
+					var x = onFulfilled(this.value)
+					this.resolvePromise(promise2, x, resolve, reject);
+				}catch(e){
+					reject(e)
+				}
+			}
+			function onRejectedItem(){
+				try{
+					var x = onRejected(this.value)
+					this.resolvePromise(promise2, x, resolve, reject);
+				}catch(e){
+					reject(e)
+				}
+			}
+			//判断当前promise状态
+			if(this.state == _pending){
+				..table.push(this.onFulfilledCallbacks,onFulfilledItem)
+				..table.push(this.onRejectedCallbacks,onRejectedItem )	
+			}
+			if(this.state == _fulfilled){
+					onFulfilledItem()
+				}
+			if(this.state ==_rejected){
+					onRejectedItem()
+			}
+			
+			
+		})	
+		
+		return promise2; 
+	};
+	
+	run=function(){
+		try{
+			this.executor(this.resolve,this.reject)
+		}
+		catch(e){
+			this.reject(e)
+		}
+	}
+	
+	this.run()
+}
+
+namespace promise
+import log4j
+import thread.command
+
+_pending = "pending"
+_fulfilled = "fulfilled"
+_rejected = "rejected"
+logger = log4j.getLogger('promise')
+
+function isFuntion(fun,msg){
+    msg = msg ? msg:""
+    //var isPromise = type.table == type(fun) and type.function == type(fun.then) 
+    var isFuntion = type.function == type(fun);
+    if(!isFuntion) error(..string.concat(msg,"参数错误，参数必需是函数或者promise"))
+
+}
+
+
+/**intellisense()
+promise(. = promise(function(resolve,reject){})
+promise() = !promise.
+!promise.then = !promise.
+!promise.then = @.then(function(item){})
+!promise.clutch(callbackFunction) = 出错要执行的函数
+!promise.clutch(callbackFunction) = @.clutch(function(item){})
+!promise.finally(callbackFunction) = 总是执行的函数
+!promise.finally(callbackFunction) = @.finally(function(item){})
+end intellisense**/

@@ -1,0 +1,44 @@
+﻿import console;
+import log4j;
+log4j.configure({
+            level = "INFO";
+})
+import promise;
+import win.ui;
+import thread
+import thread.command
+function test(){
+	return promise(function(resolve,reject){
+		var guid = tostring(win.guid.create())
+		var listener = thread.command()
+		listener[guid] = function( threadHandle,... ){
+		  	resolve(...)
+		  	thread.waitClose(threadHandle)
+		}
+		var threadHandle = thread.invoke(function(guid){
+			import thread.command
+			sleep(10)
+			thread.command.post(guid,thread.getHandle(),"3521321")
+		},guid)
+	});  
+ 
+}
+console.log("strat")
+test().then(function(item){
+	console.log("callback1",item)
+	return promise(function(resolve,reject){
+    	sleep(200)
+    	resolve("hello")
+    }); 
+}
+).then(function(item){
+	console.log("callback2",item)
+}
+,function(item){
+	console.log("reject2",item)
+}
+)
+console.log("end")
+sleep(3000)
+console.pause(true);
+//代码显示名称

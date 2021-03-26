@@ -1,0 +1,55 @@
+﻿//async promise test
+import console;
+import promise;
+import promise.async;
+function ahttp(){
+    //返回一个Promise,因为是线程里执行的所以要导入promise库
+    import promise;
+	return promise(function(resolve,reject){
+		try{		
+			import inet.whttp;
+			var http = inet.whttp()
+			var res,err,code = http.get("https://www.baidu.com")
+			sleep(1000)
+			if(res){
+				resolve(res)	
+			}else {
+				reject(err,code)
+			}
+		}
+		catch(e){
+			reject(e)
+		}
+	
+	}); 
+};
+console.log("async")
+var timeStart = time.tick()
+
+function saySucess1(item){
+    var now = time.now()
+	console.log(now,now.milliseconds,"callback1",#item,time.tick()-timeStart,"毫秒")
+	return "callback reutn" 
+}
+
+function sayError(item){
+	console.log("err",item)
+}
+
+
+for(i=1;10;1){
+	promise.async.crate(ahttp).then(saySucess1,sayError).then(function(item){
+		console.log("callback2",item)
+	}
+)}
+sleep(3000)
+console.log("sync")
+for(i=1;10;1){
+	ahttp().then(saySucess1,sayError).then(function(item){
+		console.log("callback2",item)
+	})
+}
+
+
+console.log("end")
+console.pause(true);
