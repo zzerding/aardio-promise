@@ -12,18 +12,14 @@ class promise{
 	};
 	
 	clutch = function(fun){
-		isFuntion(fun,"clutch")
-		if(this.state == _rejected){
-			fun()
-		}
+		return this.then(null,fun); 
 	};
 	finally = function(fun){
-		isFuntion(fun,"finally")
-		fun()
+		return this.then(fun,fun)
 	};
 	resolve = function(value){
 		if(this.state == _pending){
-			logger.trace("resolve",value)
+			logger.trace("resolve")
 			this.state =_fulfilled
 			this.value = value
 			for(index,fulfilledCallback in this.onFulfilledCallbacks){
@@ -45,8 +41,10 @@ class promise{
 	resolvePromise = function(promise2,x,resolve,reject){
 		logger.trace("resolvePromise",promise2,x,resolve,reject)
 		if clled = false //重复call
-		if(promise2==x and x !=null){
-			return reject("循环引用"); 
+
+		if(promise2===x and x !=null){
+			//实际上promise2不能是当前的promise地址，只会是上一个
+			//return reject("循环引用"); 
 		}
 		//判断x 是一个table 
 		if(type.table == type(x)){
@@ -94,10 +92,15 @@ class promise{
 		//判断参数
 		if(onFulfilled != null ){
 			isFuntion(onFulfilled,"then() @1")
+		}else{
+			onFulfilled = lambda(value) value
 		}
 		if(onRejected != null ){
 			isFuntion(onRejected,"then() @2")
+		}else {
+			onRejected = lambda(reason) error(reason)
 		}
+		
 		
 		logger.trace("promise then",this.state)
 		
@@ -105,7 +108,6 @@ class promise{
 		promise2 = ..promise(function(resolve,reject){
 			logger.trace("return promese",this.state)
 			function onFulfilledItem(){
-				if(type.function != onFulfilled) {return}
 				try{
 					var x = onFulfilled(this.value)
 					this.resolvePromise(promise2, x, resolve, reject);
@@ -114,7 +116,6 @@ class promise{
 				}
 			}
 			function onRejectedItem(){
-				if(onRejected == null) {return}
 				try{
 					var x = onRejected(this.reason)
 					this.resolvePromise(promise2, x, resolve, reject);
