@@ -105,6 +105,7 @@ class promise{
 		promise2 = ..promise(function(resolve,reject){
 			logger.trace("return promese",this.state)
 			function onFulfilledItem(){
+				if(type.function != onFulfilled) {return}
 				try{
 					var x = onFulfilled(this.value)
 					this.resolvePromise(promise2, x, resolve, reject);
@@ -113,8 +114,9 @@ class promise{
 				}
 			}
 			function onRejectedItem(){
+				if(onRejected == null) {return}
 				try{
-					var x = onRejected(this.value)
+					var x = onRejected(this.reason)
 					this.resolvePromise(promise2, x, resolve, reject);
 				}catch(e){
 					reject(e)
@@ -169,7 +171,7 @@ function isFuntion(fun,msg){
 
 
 /**intellisense()
-promise(. = promise(function(resolve,reject){})
+promise(. = @promise(function(resolve,reject){})
 promise() = !promise.
 !promise.then = !promise.
 !promise.then = @.then(function(item){})
