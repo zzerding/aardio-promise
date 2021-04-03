@@ -1,6 +1,6 @@
 ﻿//异步的promise
-import promise;
 namespace promise.async
+import promise;
 import thread.command;
 import thread.manage;
 import win.ui;
@@ -54,6 +54,7 @@ function crate(cratePromiseFun,args){
 	
 	}); 
 }
+
 
 
 /**intellisense(promise.async)

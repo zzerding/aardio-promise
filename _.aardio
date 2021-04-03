@@ -24,7 +24,7 @@ class promise{
 			this.value = value
 			for(index,fulfilledCallback in this.onFulfilledCallbacks){
 				fulfilledCallback()
-			}	
+			}
 		}
 	};
 	reject = function(reason){
@@ -105,6 +105,7 @@ class promise{
 		logger.trace("promise then",this.state)
 		
 		//返回一个promise
+		var promise2
 		promise2 = ..promise(function(resolve,reject){
 			logger.trace("return promese",this.state)
 			function onFulfilledItem(){
@@ -149,7 +150,7 @@ class promise{
 			this.reject(e)
 		}
 	}
-	
+
 	this.run()
 }
 
@@ -162,6 +163,91 @@ _fulfilled = "fulfilled"
 _rejected = "rejected"
 logger = log4j.getLogger('promise')
 
+//静态方法
+function resolve(arg){
+    if(isPromise(arg)){
+		return arg
+	}else{
+		return ..promise(function(resolve,reject){resolve(arg)}) 
+	}
+	
+}
+
+function reject(arg){
+	if(isPromise(arg)){
+		return arg; 
+	}else{
+		return  promise(function(resolve,reject){reject(arg)}); 
+	}
+}
+
+
+function all(promiseTable){
+		if(type.table != type(promiseTable)) error("参数必须为数组",2)
+		if(#promiseTable == 0 ) return ..promise.resolve(promiseTable); 
+	
+		return ..promise(function(resolve,reject){
+			var result = {}
+			function onFulfilled(value){
+				..table.push(result,value)
+				if(#result == #promiseTable){
+					resolve(result)
+				}
+			}
+			function onRejected(reason){
+				reject(reason)
+			}
+			for(k,v in promiseTable){
+				..promise.resolve(v).then(onFulfilled,onRejected)
+			}
+		}); 	
+}
+	
+function any(){
+	if(type.table != type(promiseTable)) error("参数必须为数组",2)
+	if(#promiseTable == 0 ) return ..promise.resolve(promiseTable); 
+	
+	return ..promise(function(resolve,reject){
+
+		function onFulfilled(value){
+				resolve(result)
+		}
+		function onRejected(reason){
+			reject(reason)
+		}
+		for(k,v in promiseTable){
+			..promise.resolve(v).then(onFulfilled,onRejected)
+		}
+	}); 	
+}
+
+function allSettled(iterable)(){
+	return ..promise(function(resolve,reject){
+		var result = {}
+		function onFulfilled(value){
+			table.push(result,{
+				status = _fulfilled;
+				value=  value;
+			})
+			if(#result == #promiseTable){
+					resolve(result)
+			}
+		}
+		function onRejected(reason){
+			table.push(result,{
+				status = _rejected;
+				reason =  reason;
+			})
+			if(#result == #promiseTable){
+					resolve(result)
+			}
+		}
+		for(k,v in promiseTable){
+			..promise.resolve(v).then(onFulfilled,onRejected)
+		}
+	}); 
+}
+
 function isFuntion(fun,msg){
     msg = msg ? msg:""
     //var isPromise = type.table == type(fun) and type.function == type(fun.then) 
@@ -170,12 +256,26 @@ function isFuntion(fun,msg){
 
 }
 
+function isPromise(value){
+	if(type.table != type(value)) return false;
+	if(!value.then) return false; 
+	if(type.function != type(value.then)) return false 
+	return true; 
+}
+
+
 
 /**intellisense()
-promise(. = @promise(function(resolve,reject){})
 promise() = !promise.
-!promise.then = !promise.
-!promise.then = @.then(function(item){})
+promise(. = @promise(function(resolve,reject){})
+promise.isPromise(arg) = if arg is promise @return true or false 
+promise.resolve(arg) = 如果 arg 是值那么返回一个 fulfilled 状态的promise 如果arg是一个promise返回一个args执行后的promise
+promise.reject(arg) = 静态方法，传入一个值返回 rejected 状态的promise
+promise.any(arrayPromies) = 参数为promise数组哪个promise最先返回就resolve它的结果
+promise.allSettled(arrayPromise) = 参数为promise数组返回一个在所有给定的promise都已经fulfilled或rejected后的promise，并带有一个对象数组，每个对象表示对应的promise结果。
+pomise.all(arrayPromies) = 参数为一个promise数组，只有所有promise为resolve才返回resolve数组 否则有一个reject则马上返回reject
+!promise.then() = !promise.
+!promise.then = @then(onFulfilled,onRejected)
 !promise.clutch(callbackFunction) = 出错要执行的函数
 !promise.clutch(callbackFunction) = @.clutch(function(item){})
 !promise.finally(callbackFunction) = 总是执行的函数
