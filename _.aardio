@@ -182,30 +182,30 @@ function reject(arg){
 }
 
 
-function all(promiseTable){
-		if(type.table != type(promiseTable)) error("参数必须为数组",2)
-		if(#promiseTable == 0 ) return ..promise.resolve(promiseTable); 
+function all(arrsyPromise){
+		if(type.table != type(arrsyPromise)) error("参数必须为数组",2)
+		if(#arrsyPromise == 0 ) return ..promise.resolve(arrsyPromise); 
 	
 		return ..promise(function(resolve,reject){
 			var result = {}
 			function onFulfilled(value){
 				..table.push(result,value)
-				if(#result == #promiseTable){
+				if(#result == #arrsyPromise){
 					resolve(result)
 				}
 			}
 			function onRejected(reason){
 				reject(reason)
 			}
-			for(k,v in promiseTable){
+			for(k,v in arrsyPromise){
 				..promise.resolve(v).then(onFulfilled,onRejected)
 			}
 		}); 	
 }
 	
 function any(){
-	if(type.table != type(promiseTable)) error("参数必须为数组",2)
-	if(#promiseTable == 0 ) return ..promise.resolve(promiseTable); 
+	if(type.table != type(arrsyPromise)) error("参数必须为数组",2)
+	if(#arrsyPromise == 0 ) return ..promise.resolve(arrsyPromise); 
 	
 	return ..promise(function(resolve,reject){
 
@@ -215,13 +215,13 @@ function any(){
 		function onRejected(reason){
 			reject(reason)
 		}
-		for(k,v in promiseTable){
+		for(k,v in arrayPromise){
 			..promise.resolve(v).then(onFulfilled,onRejected)
 		}
 	}); 	
 }
 
-function allSettled(iterable)(){
+function allSettled(arrayPromise){
 	return ..promise(function(resolve,reject){
 		var result = {}
 		function onFulfilled(value){
@@ -229,7 +229,7 @@ function allSettled(iterable)(){
 				status = _fulfilled;
 				value=  value;
 			})
-			if(#result == #promiseTable){
+			if(#result == #arrayPromise){
 					resolve(result)
 			}
 		}
@@ -238,11 +238,11 @@ function allSettled(iterable)(){
 				status = _rejected;
 				reason =  reason;
 			})
-			if(#result == #promiseTable){
+			if(#result == #arrayPromise){
 					resolve(result)
 			}
 		}
-		for(k,v in promiseTable){
+		for(k,v in arrayPromise){
 			..promise.resolve(v).then(onFulfilled,onRejected)
 		}
 	}); 
