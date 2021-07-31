@@ -7,6 +7,26 @@ import promise;
 import win.ui;
 import thread
 import thread.command
+
+
+//test promise static funtion
+var logger = log4j.getLogger('promise.resolve')
+//test promise.resolve
+var p1 = promise.resolve(1)
+assert(promise.isPromise(p1),"promise.resolve is error")
+assert(p1.state == promise._fulfilled,"promise.status is not fulfilled")
+p1.then(function(item){
+	assert(item==1,"promise.resolve.then is error")
+	return 2; 
+}).then(function(item){
+	assert(item==3,"promise.resolve.then is error")
+}).clutch(function(e){
+	logger.error(e)
+})
+
+
+
+
 function test(){
 	return promise(function(resolve,reject){
 		var guid = tostring(win.guid.create())
