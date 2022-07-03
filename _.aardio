@@ -19,7 +19,7 @@ class promise{
 	};
 	resolve = function(value){
 		if(this.state == _pending){
-			logger.trace("resolve")
+			logger.trace("change resolve",#this.onFulfilledCallbacks)
 			this.state =_fulfilled
 			this.value = value
 			for(index,fulfilledCallback in this.onFulfilledCallbacks){
@@ -29,6 +29,7 @@ class promise{
 	};
 	reject = function(reason){
 		if(this.state ==_pending){
+			logger.trace("change reject",#this.onRejectedCallbacks)
 			this.state = _rejected
 			this.reason = reason
 			logger.trace("reject",reason)
@@ -39,15 +40,16 @@ class promise{
 	};
 	//递归调用返回的promise
 	resolvePromise = function(promise2,x,resolve,reject){
-		logger.trace("resolvePromise",promise2,x,resolve,reject)
-		if clled = false //重复call
+		//logger.trace("resolvePromise",promise2,x,resolve,reject)
+		var clled = false //重复call
 
 		if(promise2===x and x !=null){
+			logger.debug("循环引用")
 			//实际上promise2不能是当前的promise地址，只会是上一个
 			//return reject("循环引用"); 
 		}
-		//判断x 是一个table 
-		if(type.table == type(x)){
+		//判断x 是一个 promise 
+		if( isPromise(x)){
 			try{
 				var then = x.then 
 				function resolve2(y){
@@ -56,7 +58,7 @@ class promise{
 						return;
 					} ; 
 					//递归调用
-					this.resolvePromise(promise2,y,resolve,reject)
+					return this.resolvePromise(promise2,y,resolve,reject)
 				}
 				function reject2(reason){
 					if(clled){
@@ -84,7 +86,7 @@ class promise{
 			
 		}else{
 			//x 是一个普通值
-			resolve(x)
+			return resolve(x)
 		}
 	};
 	
@@ -101,7 +103,7 @@ class promise{
 			onRejected = lambda(reason) error(reason)
 		}
 		
-		
+
 		logger.trace("promise then",this.state)
 		
 		//返回一个promise
@@ -121,7 +123,7 @@ class promise{
 					var x = onRejected(this.reason)
 					this.resolvePromise(promise2, x, resolve, reject);
 				}catch(e){
-					reject(e)
+					reject(this.reason)
 				}
 			}
 			//判断当前promise状态
@@ -152,16 +154,27 @@ class promise{
 	}
 
 	this.run()
+
 }
 
-namespace promise
-import log4j
-import thread.command
 
+namespace promise
 _pending = "pending"
 _fulfilled = "fulfilled"
 _rejected = "rejected"
-logger = log4j.getLogger('promise')
+logger=null
+try{
+	import log4j;
+	logger = log4j.getLogger('promise') //logger('promise')
+	logger.defaultLevel="OFF"
+}catch(e){
+	logger={
+		@{
+			_get = lambda() function(){}
+		}
+	}
+}
+
 
 //静态方法
 function resolve(arg){
@@ -177,7 +190,7 @@ function reject(arg){
 	if(isPromise(arg)){
 		return arg; 
 	}else{
-		return  promise(function(resolve,reject){reject(arg)}); 
+		return  ..promise(function(resolve,reject){reject(arg)}); 
 	}
 }
 
@@ -250,7 +263,6 @@ function allSettled(arrayPromise){
 
 function isFuntion(fun,msg){
     msg = msg ? msg:""
-    //var isPromise = type.table == type(fun) and type.function == type(fun.then) 
     var isFuntion = type.function == type(fun);
     if(!isFuntion) error(..string.concat(msg,"参数错误，参数必需是函数或者promise"))
 
@@ -269,15 +281,22 @@ function isPromise(value){
 promise() = !promise.
 promise(. = @promise(function(resolve,reject){})
 promise.isPromise(arg) = if arg is promise @return true or false 
+promise.resolve()=!promise.
 promise.resolve(arg) = 如果 arg 是值那么返回一个 fulfilled 状态的promise 如果arg是一个promise返回一个args执行后的promise
+promise.reject()=!promise.
 promise.reject(arg) = 静态方法，传入一个值返回 rejected 状态的promise
+promise.any()=!promise.
 promise.any(arrayPromies) = 参数为promise数组哪个promise最先返回就resolve它的结果
+promise.allSettled()=!promise.
 promise.allSettled(arrayPromise) = 参数为promise数组返回一个在所有给定的promise都已经fulfilled或rejected后的promise，并带有一个对象数组，每个对象表示对应的promise结果。
+pomise.all()=!promise.
 pomise.all(arrayPromies) = 参数为一个promise数组，只有所有promise为resolve才返回resolve数组 否则有一个reject则马上返回reject
-!promise.then() = !promise.
-!promise.then = @then(onFulfilled,onRejected)
 !promise.clutch(callbackFunction) = 出错要执行的函数
 !promise.clutch(callbackFunction) = @.clutch(function(item){})
 !promise.finally(callbackFunction) = 总是执行的函数
 !promise.finally(callbackFunction) = @.finally(function(item){})
+!promise.then = @.then(onFulfilled,onRejected)
+!promise.then() = !promise.
 end intellisense**/
+
+
