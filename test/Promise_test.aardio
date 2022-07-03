@@ -19,11 +19,10 @@ p1.then(function(item){
 	assert(item==1,"promise.resolve.then is error")
 	return 2; 
 }).then(function(item){
-	assert(item==3,"promise.resolve.then is error")
+	assert(item==2,"promise.resolve.then is error")
 }).clutch(function(e){
-	logger.error(e)
+	logger.info(e)
 })
-
 
 
 
@@ -47,8 +46,9 @@ console.log("strat")
 test().then(function(item){
 	console.log("callback1",item)
 	return promise(function(resolve,reject){
-    	sleep(200)
-    	resolve("hello")
+    	win.setTimeout(function(){
+    	 resolve("hello")
+    	},200)
     }); 
 }
 ).then(function(item){
