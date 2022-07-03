@@ -153,8 +153,12 @@ class promise{
 		}
 	}
 
-	this.run()
-
+	this.run();
+	
+	//定义类型为 promise
+	@{
+		_type="promise"
+	 }
 }
 
 
@@ -269,10 +273,8 @@ function isFuntion(fun,msg){
 }
 
 function isPromise(value){
-	if(type.table != type(value)) return false;
-	if(!value.then) return false; 
-	if(type.function != type(value.then)) return false 
-	return true; 
+	var _,t = type(value)
+	return t=='promise'; 
 }
 
 
@@ -280,7 +282,7 @@ function isPromise(value){
 /**intellisense()
 promise() = !promise.
 promise(. = @promise(function(resolve,reject){})
-promise.isPromise(arg) = if arg is promise @return true or false 
+promise.isPromise(arg) = if arg is promise \n@return true or false 
 promise.resolve()=!promise.
 promise.resolve(arg) = 如果 arg 是值那么返回一个 fulfilled 状态的promise 如果arg是一个promise返回一个args执行后的promise
 promise.reject()=!promise.
